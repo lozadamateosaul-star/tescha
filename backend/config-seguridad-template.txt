@@ -1,0 +1,20 @@
+# ========================================
+# 🔒 CONFIGURACIÓN DE SEGURIDAD
+# ========================================
+
+# Email para alertas de seguridad (SOLO cuando hay intentos de hackeo)
+SECURITY_ALERT_EMAIL=tu_email@gmail.com
+
+# Habilitar alertas por email (true para activar, false para desactivar)
+ENABLE_EMAIL_ALERTS=true
+
+# Configuración SMTP para Gmail
+# IMPORTANTE: Usa una "Contraseña de aplicación", NO tu contraseña normal
+# Cómo obtenerla: https://myaccount.google.com/apppasswords
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=tu_email@gmail.com
+SMTP_PASS=tu_contraseña_de_aplicacion_de_16_caracteres
+
+# Clave de encriptación (generar con: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+ENCRYPTION_KEY=generar_y_pegar_aqui

@@ -1,0 +1,45 @@
+services:
+  # Base de Datos PostgreSQL
+  - type: pserv
+    name: tescha-db
+    plan: free
+    databaseName: tescha
+    databaseUser: tescha_user
+    region: oregon
+
+  # Backend (Web Service)
+  - type: web
+    name: tescha-backend
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tescha-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://tescha-frontend.onrender.com
+    
+  # Frontend (Static Site)
+  - type: web
+    name: tescha-frontend
+    runtime: static
+    plan: free
+    region: oregon
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://tescha-backend.onrender.com

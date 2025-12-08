@@ -1,0 +1,26 @@
+{
+    "name": "tescha-security-tests",
+    "version": "1.0.0",
+    "description": "Pruebas de penetración y seguridad para el sistema TESCHA",
+    "main": "penetration-tests.js",
+    "type": "module",
+    "scripts": {
+        "test": "node penetration-tests.js",
+        "test:sql": "node penetration-tests.js --test=sql",
+        "test:xss": "node penetration-tests.js --test=xss",
+        "test:brute": "node penetration-tests.js --test=brute",
+        "test:all": "node penetration-tests.js"
+    },
+    "keywords": [
+        "security",
+        "penetration-testing",
+        "tescha",
+        "vulnerability-scanner"
+    ],
+    "author": "TESCHA Security Team",
+    "license": "MIT",
+    "dependencies": {
+        "axios": "^1.13.2",
+        "chalk": "^5.6.2"
+    }
+}

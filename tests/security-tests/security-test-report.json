@@ -1,0 +1,29 @@
+{
+  "fecha": "2025-12-02T20:06:41.036Z",
+  "total": 4,
+  "passed": 3,
+  "failed": 1,
+  "porcentaje": 75,
+  "resultados": [
+    {
+      "test": "SQL Injection",
+      "passed": true,
+      "details": "Todos los payloads bloqueados"
+    },
+    {
+      "test": "Fuerza Bruta",
+      "passed": true,
+      "details": "Rate limiting activo"
+    },
+    {
+      "test": "Acceso Sin Auth",
+      "passed": true,
+      "details": "Todos los endpoints protegidos"
+    },
+    {
+      "test": "DoS",
+      "passed": false,
+      "details": "No hay límite de requests"
+    }
+  ]
+}
