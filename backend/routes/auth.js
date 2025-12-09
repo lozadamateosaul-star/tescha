@@ -75,6 +75,7 @@ router.post('/login', validate(loginSchema), trackLoginAttempts, async (req, res
       }
     }
 
+    console.log('🔑 Generating JWT token...');
     const token = jwt.sign(
       {
         id: usuario.id,
@@ -83,8 +84,9 @@ router.post('/login', validate(loginSchema), trackLoginAttempts, async (req, res
         maestro_id: maestroId
       },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
     );
+    console.log('✅ Token generated successfully');
 
     // Delay constante antes de responder (timing attack prevention)
     const elapsed = Date.now() - startTime;
@@ -101,6 +103,8 @@ router.post('/login', validate(loginSchema), trackLoginAttempts, async (req, res
       cambio_password_requerido: usuario.cambio_password_requerido || false
     });
   } catch (error) {
+    console.error('❌ Login error:', error.message);
+    console.error('Stack:', error.stack);
     res.status(500).json({ error: 'Error en el servidor' });
   }
 });
