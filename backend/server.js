@@ -54,6 +54,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// 🔧 CONFIGURACIÓN: Trust proxy para funcionar detrás de Render
+app.set('trust proxy', 1);
+
 // 🛡️ SEGURIDAD: Rate Limiting - Prevenir ataques de fuerza bruta
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
@@ -149,6 +152,21 @@ app.get('/', (req, res) => {
 
 // Health check endpoint
 app.get('/health', healthCheck);
+
+// API root endpoint
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'API TESCHA - Sistema de Coordinación de Inglés',
+    version: '1.0.0',
+    status: 'online',
+    endpoints: {
+      auth: '/api/auth',
+      alumnos: '/api/alumnos',
+      maestros: '/api/maestros',
+      dashboard: '/api/dashboard'
+    }
+  });
+});
 
 // Rutas de la API
 // Login con rate limiting más restrictivo
