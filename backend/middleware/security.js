@@ -109,11 +109,15 @@ export const securityLogger = async (req, res, next) => {
 
 async function logSecurityEvent(event) {
     try {
-        await pool.query(
-            `INSERT INTO security_logs (event_type, user_id, ip_address, path, method, user_agent, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-            [event.type, event.userId, event.ip, event.path, event.method, event.userAgent, event.timestamp]
-        );
+        // Log to console instead of database for now
+        console.log('🔒 Security Event:', {
+            type: event.type,
+            userId: event.userId,
+            ip: event.ip,
+            path: event.path,
+            method: event.method,
+            timestamp: event.timestamp
+        });
     } catch (error) {
         console.error('Error logging security event:', error);
     }
@@ -123,31 +127,28 @@ async function logSecurityEvent(event) {
 // BLOQUEO DE CUENTA POR INTENTOS FALLIDOS
 // =============================================
 
-const loginAttempts = new Map(); // En producción, usar Redis
+const loginAttempts = new Map(); // Usar memoria en lugar de BD
 
 export const trackLoginAttempts = async (req, res, next) => {
     const { username } = req.body;
     const ip = req.ip;
     const key = `${username}:${ip}`;
 
-    // Verificar intentos en base de datos
+    // Verificar intentos en memoria
     try {
-        const result = await pool.query(
-            `SELECT COUNT(*) as attempts FROM login_attempts 
-       WHERE username = $1 AND ip_address = $2 
-       AND attempt_time > NOW() - INTERVAL '1 hour'`,
-            [username, ip]
-        );
+        const now = Date.now();
+        const attempts = loginAttempts.get(key) || [];
 
-        const attempts = parseInt(result.rows[0].attempts);
+        // Limpiar intentos antiguos (más de 1 hora)
+        const recentAttempts = attempts.filter(time => now - time < 3600000);
 
-        if (attempts >= 10) {
+        if (recentAttempts.length >= 10) {
             return res.status(429).json({
                 error: 'Cuenta bloqueada temporalmente por múltiples intentos fallidos. Intenta en 1 hora.'
             });
         }
 
-        req.loginAttempts = attempts;
+        req.loginAttempts = recentAttempts.length;
         next();
     } catch (error) {
         console.error('Error tracking login attempts:', error);
@@ -157,10 +158,12 @@ export const trackLoginAttempts = async (req, res, next) => {
 
 export const recordFailedLogin = async (username, ip) => {
     try {
-        await pool.query(
-            `INSERT INTO login_attempts (username, ip_address) VALUES ($1, $2)`,
-            [username, ip]
-        );
+        const key = `${username}:${ip}`;
+        const attempts = loginAttempts.get(key) || [];
+        attempts.push(Date.now());
+        loginAttempts.set(key, attempts);
+
+        console.log(`⚠️ Failed login attempt for ${username} from ${ip}`);
     } catch (error) {
         console.error('Error recording failed login:', error);
     }
@@ -168,10 +171,9 @@ export const recordFailedLogin = async (username, ip) => {
 
 export const clearLoginAttempts = async (username, ip) => {
     try {
-        await pool.query(
-            `DELETE FROM login_attempts WHERE username = $1 AND ip_address = $2`,
-            [username, ip]
-        );
+        const key = `${username}:${ip}`;
+        loginAttempts.delete(key);
+        console.log(`✅ Cleared login attempts for ${username} from ${ip}`);
     } catch (error) {
         console.error('Error clearing login attempts:', error);
     }
