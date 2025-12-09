@@ -15,16 +15,21 @@ const MIN_RESPONSE_TIME = 300; // 300ms para todos los casos
 // Login con validación y protección contra fuerza bruta
 router.post('/login', validate(loginSchema), trackLoginAttempts, async (req, res) => {
   const startTime = Date.now();
-  
+
   try {
     const { username, password } = req.body;
+
+    console.log('🔍 Login attempt:', { username, passwordLength: password?.length });
 
     const result = await pool.query(
       'SELECT * FROM usuarios WHERE username = $1 AND activo = true',
       [username]
     );
 
+    console.log('📊 Users found:', result.rows.length);
+
     if (result.rows.length === 0) {
+      console.log('❌ User not found:', username);
       // Registrar intento fallido
       await recordFailedLogin(username, req.ip);
       // Delay constante antes de responder
@@ -34,9 +39,19 @@ router.post('/login', validate(loginSchema), trackLoginAttempts, async (req, res
     }
 
     const usuario = result.rows[0];
+    console.log('👤 User from DB:', {
+      id: usuario.id,
+      username: usuario.username,
+      rol: usuario.rol,
+      hasPassword: !!usuario.password,
+      passwordLength: usuario.password?.length
+    });
+
     const isValidPassword = await bcrypt.compare(password, usuario.password);
+    console.log('🔐 Password comparison result:', isValidPassword);
 
     if (!isValidPassword) {
+      console.log('❌ Invalid password for user:', username);
       // Registrar intento fallido
       await recordFailedLogin(username, req.ip);
       // Delay constante antes de responder
